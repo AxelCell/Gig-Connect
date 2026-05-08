@@ -1,6 +1,6 @@
 # FSD-PBL: GigConnect Platform
 
-**Semester 6 PBL Project | Full-Stack Gig Marketplace**  
+** Full-Stack Gig Marketplace**  
 **Status:** Phase 3 complete and pushed to GitHub  
 **Team:** Harshit Suyal, Manas Joshi, Aishwary Bisht, Saumya Pratap Singh
 
