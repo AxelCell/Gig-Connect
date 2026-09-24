@@ -205,6 +205,8 @@ The full route list is in [`gig-platform-backend/routes/`](gig-platform-backend/
 - Razorpay payments are **verified on the server** with a constant-time HMAC signature comparison. Only the paying client can verify an order.
 - Search input is **regex-escaped** before querying MongoDB, which prevents ReDoS and query errors.
 - Chat rooms and messages go through an **access check**, so only a gig's participants can read or join them.
+- **Contact details are private**: public gig pages hide emails and phone numbers. Only the client, the hired worker and admins can see them.
+- **Security headers** are set with `helmet` (HSTS, `X-Content-Type-Options`, frame protection and more).
 - Secrets live in `.env` files and are never committed; `.env.example` documents them.
 
 ---

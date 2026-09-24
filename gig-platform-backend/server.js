@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import helmet from "helmet";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
@@ -93,6 +94,9 @@ io.on("connection", (socket) => {
   });
 });
 
+// Security headers (X-Content-Type-Options, HSTS, X-Frame-Options, ...).
+// The API is called from a different origin, so allow cross-origin reads of its responses.
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "1mb" }));
 
