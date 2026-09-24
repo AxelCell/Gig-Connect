@@ -24,6 +24,17 @@ const userSchema = new mongoose.Schema(
             enum: ["worker", "client", "admin"],
             default: "worker",
         },
+        bio: {
+            type: String,
+            default: "",
+            trim: true,
+            maxlength: 1000,
+        },
+        avatar: {
+            type: String,
+            default: "",
+            trim: true,
+        },
         skills: {
             type: [String],
             default: [],
