@@ -16,6 +16,13 @@ const getRazorpayClient = () => {
   return new Razorpay({ key_id: keyId, key_secret: keySecret });
 };
 
+// Constant-time comparison so the signature can't be guessed via response timing.
+const signaturesMatch = (expected, received) => {
+  const a = Buffer.from(expected);
+  const b = Buffer.from(received);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+};
+
 const buildPaymentResponse = async (payment) => {
   return Payment.findById(payment._id)
     .populate("gig", "title budget status paymentStatus client worker assignedWorkers")
@@ -205,8 +212,16 @@ export const verifyRazorpayPayment = async (req, res) => {
       return res.status(404).json({ message: "Payment record not found" });
     }
 
+    if (payment.client?._id?.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to verify this payment" });
+    }
+
     if (payment.status === "paid") {
       return res.json({ payment, gig: payment.gig });
+    }
+
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      throw new Error("Razorpay credentials are not configured");
     }
 
     const generatedSignature = crypto
@@ -214,7 +229,7 @@ export const verifyRazorpayPayment = async (req, res) => {
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
       .digest("hex");
 
-    if (generatedSignature !== razorpaySignature) {
+    if (!signaturesMatch(generatedSignature, String(razorpaySignature))) {
       payment.status = "failed";
       payment.razorpayPaymentId = razorpayPaymentId;
       payment.razorpaySignature = razorpaySignature;
@@ -258,8 +273,8 @@ export const getMyPayments = async (req, res) => {
 
 export const markTestPaymentPaid = async (req, res) => {
   try {
-    const allowTestBypass = process.env.ALLOW_TEST_PAYMENT_BYPASS === "true" || process.env.NODE_ENV !== "production";
-    if (!allowTestBypass) {
+    // Opt-in only: otherwise a failed Razorpay payment could still mark a gig as paid.
+    if (process.env.ALLOW_TEST_PAYMENT_BYPASS !== "true") {
       return res.status(403).json({ message: "Test payment bypass is disabled" });
     }
 
