@@ -14,7 +14,8 @@ export const addReview = async (req, res) => {
             return res.status(400).json({ message: "Rating, comment, and reviewee are required" });
         }
 
-        if (rating < 1 || rating > 5) {
+        const numericRating = Number(rating);
+        if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) {
             return res.status(400).json({ message: "Rating must be between 1 and 5" });
         }
 
@@ -36,6 +37,12 @@ export const addReview = async (req, res) => {
             return res.status(403).json({ message: "You are not part of this gig" });
         }
 
+        // Clients review the hired worker; workers review the client
+        const expectedReviewee = isClient ? gig.worker?.toString() : gig.client.toString();
+        if (!expectedReviewee || String(revieweeId) !== expectedReviewee) {
+            return res.status(400).json({ message: "You can only review the other party of this gig" });
+        }
+
         // Check reviewer didn't already review this gig
         const existingReview = await Review.findOne({ gig: gigId, reviewer: req.user._id });
         if (existingReview) {
@@ -46,7 +53,7 @@ export const addReview = async (req, res) => {
             gig: gigId,
             reviewer: req.user._id,
             reviewee: revieweeId,
-            rating,
+            rating: numericRating,
             comment,
         });
 

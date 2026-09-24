@@ -278,7 +278,7 @@ export const updateApplicationStatus = async (req, res) => {
                 await gig.save();
             }
 
-            const rejectionMessage = "Thank you for applying for this gig. We appreciate your interest, but another candidate has been selected for this opportunity. We encourage you to apply for future gigs.";
+            const rejectionMessage = "Thank you for applying for this gig. We appreciate your interest, but the client has decided not to move forward with your application. We encourage you to apply for future gigs.";
             await Message.create({
                 gig: gig._id,
                 sender: req.user._id,
