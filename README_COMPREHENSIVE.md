@@ -102,7 +102,7 @@ CLIENT_URL=http://localhost:5173
 ## 📁 Project Structure
 
 ```
-FSD-PBL/
+Gig-Connect/
 ├── gig-platform-backend/
 │   ├── controllers/          # Business logic
 │   ├── models/              # MongoDB schemas
@@ -157,7 +157,7 @@ FSD-PBL/
 ### Payments
 - `POST /api/payments/create-order` – Razorpay order
 - `POST /api/payments/verify` – Verify payment
-- `POST /api/payments/test-mark-paid` – Test mode
+- `POST /api/payments/test-mark-paid` – Test mode (disabled unless `ALLOW_TEST_PAYMENT_BYPASS=true`)
 
 ### Admin
 - `GET /api/admin/stats` – Dashboard stats
@@ -174,7 +174,11 @@ FSD-PBL/
 ✅ **Chat Access Control** – Only gig participants can message  
 ✅ **Payment Verification** – HMAC-SHA256 signature check  
 ✅ **Admin Protection** – Minimum 1 admin must exist  
-✅ **Input Validation** – Phone format, budget > 0, date validation  
+✅ **Input Validation** – Phone format, email, password length, budget > 0, date validation  
+✅ **No Admin Self-Registration** – Admins are promoted in the database only  
+✅ **Private Contact Details** – Email/phone visible only to the client, hired worker and admins  
+✅ **Safe Search** – User input is regex-escaped before MongoDB queries  
+✅ **Security Headers** – helmet (HSTS, nosniff, frame protection)  
 
 ---
 

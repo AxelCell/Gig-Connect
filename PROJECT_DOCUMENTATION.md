@@ -832,12 +832,13 @@ Payments.index({ gig: 1 })             // Payment by gig
 │                                                                │
 │  ────────────────────────────────────────────────────────────│
 │                                                                │
-│  STEP 6: Failure Handling (Test Mode)                        │
+│  STEP 6: Failure Handling (Test Mode, opt-in only)           │
 │  ───────────────────────────────────                         │
 │                                                                │
 │  If payment fails:                                            │
 │  1. Razorpay emits payment.failed event                       │
-│  2. Fallback handler triggers:                               │
+│  2. Fallback handler triggers (only if the server has       │
+│     ALLOW_TEST_PAYMENT_BYPASS=true; otherwise 403):          │
 │     POST /api/payments/test-mark-paid                        │
 │  3. Backend marks payment as paid manually                    │
 │  4. Same notification flow as success                        │
@@ -1486,6 +1487,9 @@ RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxx
 PORT=5000
 NODE_ENV=development
 
+# Demo only: let failed Razorpay TEST payments be marked paid
+ALLOW_TEST_PAYMENT_BYPASS=false
+
 # CORS
 CLIENT_URL=http://localhost:5173
 ```
@@ -1542,8 +1546,8 @@ npm run build
 
 | Metric | Count |
 |--------|-------|
-| **MongoDB Collections** | 9 |
-| **REST API Endpoints** | 25+ |
+| **MongoDB Collections** | 8 |
+| **REST API Endpoints** | 47 (across 9 route modules) |
 | **Socket.io Events** | 10+ |
 | **Frontend Pages** | 8+ |
 | **React Components** | 15+ |
@@ -1575,8 +1579,8 @@ npm run build
 **Team:** Harshit Suyal, Manas Joshi, Aishwary Bisht, Saumya Pratap Singh  
 **Project:** GigConnect - Full-Stack Gig Marketplace  
 **Status:** Phase 3 Complete | Production Ready  
-**Last Updated:** April 2026
+**Last Updated:** September 2026
 
 ---
 
-**© 2026 GigConnect Platform. All rights reserved.**
+**© 2026 GigConnect Team. Released under the MIT License.**
