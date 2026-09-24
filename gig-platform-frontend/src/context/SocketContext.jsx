@@ -1,10 +1,11 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
-import { getNotifications } from '../services/api';
+import { BASE_URL, getNotifications } from '../services/api';
 
 const SocketContext = createContext(null);
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+// The socket server lives on the same host as the API, just without the /api suffix.
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || BASE_URL.replace(/\/api$/, '');
 
 export const SocketProvider = ({ children }) => {
     const { token, user, isAuthenticated } = useAuth();

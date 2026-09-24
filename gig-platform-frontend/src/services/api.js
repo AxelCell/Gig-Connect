@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://gigconnect-fsd.onrender.com/api';
+// Set VITE_API_URL in gig-platform-frontend/.env to point at a different backend.
+const DEFAULT_API_URL = import.meta.env.PROD
+    ? 'https://gigconnect-fsd.onrender.com/api'
+    : 'http://localhost:5000/api';
+
+export const BASE_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/+$/, '');
 
 const api = axios.create({ baseURL: BASE_URL });//reusable axios object create krta hai yeh
 
