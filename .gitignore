@@ -1,135 +1,39 @@
-# ====== DEPENDENCIES ======
+# Dependencies
 node_modules/
-gig-platform-backend/node_modules/
-gig-platform-frontend/node_modules/
-package-lock.json
-yarn.lock
 
-# ====== ENVIRONMENT FILES ======
+# Environment files (commit .env.example, never .env)
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-gig-platform-backend/.env
-gig-platform-backend/.env.local
-gig-platform-frontend/.env
-gig-platform-frontend/.env.local
+.env.*
+!.env.example
 
-# ====== BUILD & DIST ======
+# Build output
 dist/
 build/
-gig-platform-frontend/dist/
-gig-platform-backend/dist/
-out/
-
-# ====== IDE & EDITOR ======
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-.vscode-old/
-.project
-.classpath
-.c9/
-*.sublime-workspace
-*.sublime-project
-.prettierrc
-
-# ====== TESTING & COVERAGE ======
 coverage/
-.nyc_output/
-*.lcov
-test-results/
-jest-coverage/
 
-# ====== LOGS ======
+# Logs
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
 .pnpm-debug.log*
-pids/
-*.pid
-*.seed
-*.pid.lock
 
-# ====== TEMPORARY & CACHE ======
-tmp/
-temp/
-.cache/
-.eslintcache
-.next/
-.nuxt/
-dist
-.cache/
-.vuepress/dist
-.serverless/
-.fusebox/
-.dynamodb/
-.tern-port
-.vscode-test
-.yarn/cache
-.yarn/unplugged
-
-# ====== OS FILES ======
-Thumbs.db
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*~
 .DS_Store
-ehthumbs.db
+Thumbs.db
 Desktop.ini
-.AppleDouble
-.AppleDB
-._*
-.Spotlight-V100
-.Trashes
 
-# ====== MONGODB ======
-.mongodb/
-*.bson
-
-# ====== NODE & PACKAGE MANAGERS ======
-.npm
+# Caches
+.cache/
 .eslintcache
-node_modules
-npm-debug.log
-yarn-error.log
 
-# ====== RAZORPAY & PAYMENT TESTING ======
-test-keys.txt
-payment-logs/
-sandbox-data/
-
-# ====== DATABASE BACKUPS ======
+# Local database dumps
 *.dump
 *.backup
+*.bson
 mongo-backup/
-
-# ====== DEVELOPMENT & DEBUG ======
-.vscode/launch.json
-.env.debug
-debug.log
-storybook-static/
-
-# ====== MISC ======
-*.bak
-*.swp
-*.swo
-*~
-.AppleDouble
-.LSOverride
-._*
-.DocumentRevisions-V100
-.fseventsd
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
