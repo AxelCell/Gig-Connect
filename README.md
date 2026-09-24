@@ -1,138 +1,257 @@
+<div align="center">
+
 # GigConnect
 
-A full-stack gig marketplace, built with the MERN stack, that connects **clients** who post jobs with **workers** who apply for them. It includes real-time chat, live notifications, Razorpay payments and an admin moderation panel.
+**A full-stack gig marketplace connecting clients who post jobs with workers who apply for them.**
+Real-time chat · Live notifications · Razorpay payments · Admin moderation
 
-**Live demo:** https://gigconnect-avrh.onrender.com/
-**Team:** Harshit Suyal, Manas Joshi, Aishwary Bisht, Saumya Pratap Singh
+[![CI](https://github.com/AxelCell/Gig-Connect/actions/workflows/ci.yml/badge.svg)](https://github.com/AxelCell/Gig-Connect/actions/workflows/ci.yml)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb&logoColor=white)
+![Socket.IO](https://img.shields.io/badge/Socket.IO-4-010101?logo=socket.io&logoColor=white)
+![Razorpay](https://img.shields.io/badge/Razorpay-Payments-0C2451?logo=razorpay&logoColor=white)
 
-![CI](https://github.com/AxelCell/Gig-Connect/actions/workflows/ci.yml/badge.svg)
+**[Live demo](https://gigconnect-avrh.onrender.com/)** · **[Documentation](PROJECT_DOCUMENTATION.md)** · **[Report a bug](https://github.com/AxelCell/Gig-Connect/issues)**
+
+</div>
+
+> **Note:** The demo runs on Render's free tier, so the first request after a period of inactivity may take up to a minute while the server wakes up.
+
+---
+
+## Table of contents
+
+- [About](#about)
+- [Features](#features)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
+- [Getting started](#getting-started)
+- [Environment variables](#environment-variables)
+- [API overview](#api-overview)
+- [Security](#security)
+- [Project structure](#project-structure)
+- [Roadmap](#roadmap)
+- [Team](#team)
+
+---
+
+## About
+
+GigConnect is a marketplace for short-term work. It covers everything from web development and design to local services like plumbing and delivery. It supports three roles:
+
+- **Clients** post gigs, review applicants, negotiate over chat, hire a worker and pay through Razorpay.
+- **Workers** browse and filter gigs, apply with a proposal and price, track their working time and download invoices.
+- **Admins** moderate the platform: they view statistics, manage users, handle reports and remove abusive content.
+
+### Gig lifecycle
+
+```text
+ open ──apply──▶ pending ──hire worker──▶ accepted ──pay──▶ in-progress ──complete──▶ completed
+```
+
+Every status change is checked on the server against an allowed-transitions table, so a gig can't skip a step. For example, a job can't be marked complete before it's paid.
 
 ---
 
 ## Features
 
-| Area | What it does |
-| --- | --- |
-| Auth | JWT login and registration with bcrypt-hashed passwords and role-based access (worker / client / admin) |
-| Gigs | Create, edit and delete gigs, with category and subcategory, budget, deadline and location. Search and filter too |
-| Applications | Workers apply with a proposal and price; clients accept one and the rest are auto-rejected and notified |
-| Chat | Per-gig Socket.IO chat rooms with text, price-offer and system messages |
-| Notifications | Real-time push with unread badges, mark-as-read and mark-all-read |
-| Payments | Razorpay orders with server-side HMAC signature verification |
-| Work tracking | Start/stop work timer, total hours and a downloadable invoice |
-| Trust & safety | Reviews and ratings, reports, plus admin tools to remove gigs or reviews and block users |
-| Admin | Platform stats, user management, payments overview |
+| | Feature | Details |
+| --- | --- | --- |
+| 🔐 | **Authentication** | JWT login and registration, bcrypt password hashing, role-based route guards |
+| 📋 | **Gig management** | Create, edit and delete gigs with category and subcategory, budget, deadline, location and required skills |
+| 🔎 | **Search & filters** | Keyword search plus filters by category, subcategory and budget range |
+| 📨 | **Applications** | Proposal and price per application; hiring one worker auto-rejects the others and notifies everyone |
+| 💬 | **Real-time chat** | Per-gig Socket.IO rooms with text, price-offer and system messages |
+| 🔔 | **Notifications** | Instant push notifications with unread badges and mark-as-read |
+| 💳 | **Payments** | Razorpay checkout with HMAC-SHA256 signature verification on the server |
+| ⏱️ | **Work tracking** | Start/stop timer, automatic hour calculation and a downloadable invoice |
+| ⭐ | **Reviews** | Two-way 1–5 star ratings after a job is completed |
+| 🚩 | **Reports** | Users can report gigs, users or reviews for admin action |
+| 🛠️ | **Admin panel** | Platform stats, user activation and deletion, report resolution, payments overview |
+
+---
 
 ## Tech stack
 
-- **Frontend:** React 19, Vite, React Router, Axios, Socket.IO client
-- **Backend:** Node.js, Express 5, Mongoose, Socket.IO, JWT, bcryptjs
-- **Database:** MongoDB
-- **Payments:** Razorpay
+| Layer | Technologies |
+| --- | --- |
+| Frontend | React 19, Vite, React Router 7, Axios, Socket.IO client |
+| Backend | Node.js, Express 5, Socket.IO, JSON Web Tokens, bcryptjs |
+| Database | MongoDB with Mongoose ODM |
+| Payments | Razorpay Orders API |
+| CI | GitHub Actions (backend syntax check + frontend production build) |
+
+---
 
 ## Architecture
 
 ```text
-React (Vite) ──HTTP/Axios──▶ Express REST API ──Mongoose──▶ MongoDB
-     ▲                             │
-     └──────── Socket.IO ◀─────────┘   (chat, notifications, payment updates)
-                                   │
-                                   └──▶ Razorpay (orders + signature verification)
+┌──────────────────────┐   REST (Axios + JWT)    ┌───────────────────────┐   Mongoose   ┌───────────┐
+│  React + Vite (SPA)  │ ──────────────────────▶ │  Express API          │ ───────────▶ │  MongoDB  │
+│                      │ ◀────────────────────── │  controllers/services │              └───────────┘
+│                      │   Socket.IO (JWT auth)  │                       │
+│                      │ ◀═════════════════════▶ │  Socket.IO server     │   Orders / verify
+└──────────────────────┘                         └───────────┬───────────┘ ────────────▶ Razorpay
 ```
 
-- Every protected request carries `Authorization: Bearer <jwt>` (added by an Axios interceptor).
-- Socket connections authenticate with the same JWT. Each user joins a `user:<id>` room, and gig participants join a `gig:<id>` room.
-- A payment is only marked `paid` after the backend recomputes the Razorpay HMAC-SHA256 signature and it matches.
+- **Auth:** an Axios interceptor attaches `Authorization: Bearer <token>` to every request. The `protect` middleware verifies the token and loads the user.
+- **Real time:** socket connections authenticate with the same JWT. Each user joins a private `user:<id>` room, and gig participants join a `gig:<id>` room after an access check.
+- **Payments:** the server creates a Razorpay order. After checkout, it recomputes `HMAC_SHA256(order_id|payment_id)` with the secret key, and marks the payment as paid only if that matches Razorpay's signature.
 
-## Project structure
-
-```text
-Gig-Connect/
-├── gig-platform-backend/
-│   ├── config/          # MongoDB connection
-│   ├── constants/       # Categories, gig status transitions
-│   ├── controllers/     # Route handlers
-│   ├── middleware/      # JWT auth + admin guard
-│   ├── models/          # Mongoose schemas
-│   ├── routes/          # Express routers
-│   ├── services/        # Notification service
-│   ├── utils/           # Socket helpers, chat access checks
-│   └── server.js
-├── gig-platform-frontend/
-│   └── src/
-│       ├── components/
-│       ├── context/     # Auth, Socket, Toast providers
-│       ├── pages/
-│       └── services/api.js
-└── PROJECT_DOCUMENTATION.md
-```
+---
 
 ## Getting started
 
-**Prerequisites:** Node.js 18 or later, and a MongoDB database (local or [Atlas](https://www.mongodb.com/atlas)). Razorpay test keys are optional and only needed for payments.
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) 18 or newer
+- A MongoDB database: local, or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster
+- *(Optional)* [Razorpay](https://dashboard.razorpay.com/) test keys, for payments
+
+### 1. Clone
 
 ```bash
 git clone https://github.com/AxelCell/Gig-Connect.git
 cd Gig-Connect
 ```
 
-### Backend
+### 2. Run the backend
 
 ```bash
 cd gig-platform-backend
-cp .env.example .env      # then fill in your values
+cp .env.example .env        # Windows: copy .env.example .env
+# edit .env and set at least MONGODB_URI and JWT_SECRET
 npm install
-npm run dev               # http://localhost:5000
+npm run dev                 # → http://localhost:5000
 ```
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `MONGODB_URI` | yes | MongoDB connection string |
-| `JWT_SECRET` | yes | Secret used to sign login tokens |
-| `PORT` | no | Defaults to `5000` |
-| `CLIENT_URL` | no | Allowed frontend origin(s), comma-separated |
-| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | for payments | Razorpay test or live keys |
-| `ALLOW_TEST_PAYMENT_BYPASS` | no | `true` lets failed test payments be marked paid (demo only) |
+### 3. Run the frontend
 
-### Frontend
-
-In a new terminal:
+In a second terminal:
 
 ```bash
 cd gig-platform-frontend
 npm install
-npm run dev               # http://localhost:5173
+npm run dev                 # → http://localhost:5173
 ```
 
-In development the frontend talks to `http://localhost:5000/api`. To use another backend, set `VITE_API_URL` in `gig-platform-frontend/.env` (see `.env.example`).
+In development the frontend automatically uses `http://localhost:5000/api`.
 
-### Creating an admin
+### 4. Create an admin (optional)
 
-For security, admin accounts cannot be self-registered. To make one, register a normal account and then promote it in MongoDB:
+For security, admin accounts can't be self-registered. Register a normal account, then promote it in MongoDB:
 
 ```js
 db.users.updateOne({ email: "you@example.com" }, { $set: { role: "admin" } })
 ```
 
+---
+
+## Environment variables
+
+**Backend:** `gig-platform-backend/.env`
+
+| Variable | Required | Description |
+| --- | :---: | --- |
+| `MONGODB_URI` | ✅ | MongoDB connection string |
+| `JWT_SECRET` | ✅ | Long random string used to sign tokens |
+| `PORT` | | API port (default `5000`) |
+| `CLIENT_URL` | | Allowed frontend origin(s), comma-separated |
+| `RAZORPAY_KEY_ID` | for payments | Razorpay key ID |
+| `RAZORPAY_KEY_SECRET` | for payments | Razorpay key secret |
+| `ALLOW_TEST_PAYMENT_BYPASS` | | `true` lets failed *test* payments be marked paid; for demos only |
+
+**Frontend:** `gig-platform-frontend/.env` (optional)
+
+| Variable | Description |
+| --- | --- |
+| `VITE_API_URL` | Backend API URL (defaults to localhost in dev, the hosted API in production builds) |
+| `VITE_SOCKET_URL` | Socket.IO server URL, if it differs from the API host |
+
+---
+
 ## API overview
 
-| Resource | Base route |
-| --- | --- |
-| Users & auth | `/api/users` |
-| Gigs | `/api/gigs` |
-| Applications | `/api/applications` |
-| Chat | `/api/chat` |
-| Payments | `/api/payments` |
-| Reviews | `/api/reviews` |
-| Reports | `/api/reports` |
-| Notifications | `/api/notifications` |
-| Admin | `/api/admin` |
-| Health check | `/api/health` |
+| Method | Endpoint | Description | Auth |
+| --- | --- | --- | :---: |
+| `POST` | `/api/users/register` | Create an account | |
+| `POST` | `/api/users/login` | Log in and receive a JWT | |
+| `GET` | `/api/gigs` | List and search gigs | |
+| `POST` | `/api/gigs` | Create a gig | Client |
+| `POST` | `/api/applications/:gigId` | Apply to a gig | Worker |
+| `PUT` | `/api/applications/:id/status` | Accept or reject an application | Client |
+| `GET` / `POST` | `/api/chat/:gigId` | Read and send gig messages | ✅ |
+| `POST` | `/api/payments/create-order` | Create a Razorpay order | Client |
+| `POST` | `/api/payments/verify` | Verify the payment signature | Client |
+| `PUT` | `/api/gigs/:id/start` · `/stop` | Work timer | Worker |
+| `GET` | `/api/gigs/:id/invoice` | Download an invoice | ✅ |
+| `POST` | `/api/reviews/:gigId` | Review the other party | ✅ |
+| `GET` | `/api/notifications` | List notifications | ✅ |
+| `GET` | `/api/admin/stats` | Platform statistics | Admin |
+| `GET` | `/api/health` | Health check | |
 
-For the full phase-by-phase write-up, database design and diagrams, see [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md).
+The full route list is in [`gig-platform-backend/routes/`](gig-platform-backend/routes).
 
-## Gig lifecycle
+---
+
+## Security
+
+- Passwords are hashed with **bcrypt**. JWTs expire, and deactivated users are rejected on every request and socket connection.
+- **Role checks happen on the server**. Users can't register themselves as admin.
+- Razorpay payments are **verified on the server** with a constant-time HMAC signature comparison. Only the paying client can verify an order.
+- Search input is **regex-escaped** before querying MongoDB, which prevents ReDoS and query errors.
+- Chat rooms and messages go through an **access check**, so only a gig's participants can read or join them.
+- Secrets live in `.env` files and are never committed; `.env.example` documents them.
+
+---
+
+## Project structure
 
 ```text
-open ──apply──▶ pending ──accept worker──▶ accepted ──pay──▶ in-progress ──complete──▶ completed
+Gig-Connect/
+├── .github/workflows/ci.yml   # CI: backend syntax check + frontend build
+├── gig-platform-backend/
+│   ├── config/                # MongoDB connection
+│   ├── constants/             # Job categories, allowed status transitions
+│   ├── controllers/           # Route handlers (business logic)
+│   ├── middleware/            # JWT auth, admin guard
+│   ├── models/                # Mongoose schemas
+│   ├── routes/                # Express routers
+│   ├── services/              # Notification service
+│   ├── utils/                 # Socket.IO helpers, chat access checks
+│   └── server.js              # App + Socket.IO entry point
+├── gig-platform-frontend/
+│   └── src/
+│       ├── components/        # Navbar, GigCard, Modal, StarRating
+│       ├── context/           # Auth, Socket, Toast providers
+│       ├── pages/             # Home, GigList, GigDetail, Dashboard, Admin, …
+│       └── services/api.js    # Axios client + API calls
+└── PROJECT_DOCUMENTATION.md   # Detailed design write-up
 ```
+
+---
+
+## Roadmap
+
+- [ ] API tests with Jest + Supertest, run in CI
+- [ ] Rate limiting on authentication routes
+- [ ] Pagination for gigs and notifications
+- [ ] Database indexes for common gig queries
+- [ ] MongoDB transactions for multi-step operations such as hiring a worker
+- [ ] PDF invoices
+- [ ] Docker Compose for one-command local setup
+
+---
+
+## Team
+
+| Name | GitHub |
+| --- | --- |
+| Harshit Suyal | [@Harshit-Suyal](https://github.com/Harshit-Suyal) |
+| Manas Joshi | [@itsmnx](https://github.com/itsmnx) |
+| Aishwary Bisht | [@AxelCell](https://github.com/AxelCell) |
+| Saumya Pratap Singh | – |
+
+Built as a Full-Stack Development project-based learning (PBL) project.
