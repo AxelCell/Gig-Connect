@@ -140,16 +140,17 @@ export const getGigs = async (req, res) => {
       delete filter.status;
     }
 
-    if (minBudget || maxBudget) {
-      filter.budget = {};
-      if (minBudget) filter.budget.$gte = Number(minBudget);
-      if (maxBudget) filter.budget.$lte = Number(maxBudget);
-    }
+    const min = Number(minBudget);
+    const max = Number(maxBudget);
+    if (minBudget && Number.isFinite(min)) filter.budget = { ...filter.budget, $gte: min };
+    if (maxBudget && Number.isFinite(max)) filter.budget = { ...filter.budget, $lte: max };
 
     if (search) {
+      // Escape regex special characters so user input is matched literally
+      const safeSearch = String(search).trim().slice(0, 100).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
+        { title: { $regex: safeSearch, $options: "i" } },
+        { description: { $regex: safeSearch, $options: "i" } },
       ];
     }
 
@@ -355,53 +356,6 @@ export const getMyGigs = async (req, res) => {
 
     const normalized = gigs.map((gig) => normalizeGigForRead(gig));
     res.json(normalized);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-export const markGigPaymentDone = async (req, res) => {
-  try {
-    const gig = await Gig.findById(req.params.id);
-    if (!gig) {
-      return res.status(404).json({ message: "Gig not found" });
-    }
-
-    if (gig.client.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not authorized" });
-    }
-
-    if (gig.status === "completed") {
-      return res.status(400).json({ message: "Cannot process payment for completed gig" });
-    }
-
-    if (!gig.assignedWorkers.length) {
-      return res.status(400).json({ message: "Select at least one worker before payment" });
-    }
-
-    const existingPayment = await Payment.findOne({ gig: gig._id });
-    if (existingPayment) {
-      return res.status(400).json({ message: "Payment already marked for this gig" });
-    }
-
-    await Payment.create({
-      gig: gig._id,
-      client: gig.client,
-      worker: gig.assignedWorkers[0],
-      amount: gig.budget,
-    });
-
-    gig.paymentStatus = "paid";
-    gig.paidAt = new Date();
-    gig.status = "in-progress";
-    await gig.save();
-
-    const updated = await Gig.findById(gig._id)
-      .populate("client", "name email")
-      .populate("worker", "name email")
-      .populate("assignedWorkers", "name email");
-
-    res.json(normalizeGigForRead(updated));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

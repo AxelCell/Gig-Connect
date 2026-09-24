@@ -8,7 +8,6 @@ import {
   acceptGig,
   getMyGigs,
   getGigCategories,
-  markGigPaymentDone,
   completeGig,
   generateGigInvoice,
   startGigWork,
@@ -24,7 +23,6 @@ router.get("/categories", getGigCategories);
 
 // Protected routes — MUST come before /:id to avoid being captured by param
 router.get("/user/my-gigs", protect, getMyGigs);
-router.put("/:id/payment", protect, markGigPaymentDone);
 router.put("/:id/complete", protect, completeGig);
 router.put("/:id/start", protect, startGigWork);
 router.put("/:id/stop", protect, stopGigWork);
