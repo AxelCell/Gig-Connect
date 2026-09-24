@@ -12,6 +12,7 @@ Real-time chat · Live notifications · Razorpay payments · Admin moderation
 ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb&logoColor=white)
 ![Socket.IO](https://img.shields.io/badge/Socket.IO-4-010101?logo=socket.io&logoColor=white)
 ![Razorpay](https://img.shields.io/badge/Razorpay-Payments-0C2451?logo=razorpay&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **[Live demo](https://gigconnect-avrh.onrender.com/)** · **[Documentation](PROJECT_DOCUMENTATION.md)** · **[Report a bug](https://github.com/AxelCell/Gig-Connect/issues)**
 
@@ -34,6 +35,7 @@ Real-time chat · Live notifications · Razorpay payments · Admin moderation
 - [Project structure](#project-structure)
 - [Roadmap](#roadmap)
 - [Team](#team)
+- [License](#license)
 
 ---
 
@@ -255,3 +257,9 @@ Gig-Connect/
 | Saumya Pratap Singh | – |
 
 Built as a Full-Stack Development project-based learning (PBL) project.
+
+---
+
+## License
+
+Released under the [MIT License](LICENSE).
