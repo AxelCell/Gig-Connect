@@ -21,6 +21,26 @@ export const protect = async (req, res, next) => {
   }
 };
 
+// For public routes that show extra data to logged-in users.
+// Never rejects: an invalid or missing token just means req.user stays unset.
+export const optionalAuth = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+    if (user && user.isActive) {
+      req.user = user;
+    }
+  } catch {
+    // Treat a bad token like an anonymous visitor on public routes
+  }
+  next();
+};
+
 export const adminOnly = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     next();

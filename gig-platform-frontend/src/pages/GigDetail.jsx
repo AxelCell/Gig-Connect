@@ -614,10 +614,18 @@ const GigDetail = () => {
                             </div>
                             <div>
                                 <p style={{ fontWeight: 700, fontSize: '1rem' }}>{gig.client?.name}</p>
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{gig.client?.email}</p>
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
-                                    {gig.client?.phone ? `📞 ${gig.client.phone}` : '📞 Phone not provided'}
-                                </p>
+                                {gig.client?.email ? (
+                                    <>
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{gig.client.email}</p>
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                                            {gig.client.phone ? `📞 ${gig.client.phone}` : '📞 Phone not provided'}
+                                        </p>
+                                    </>
+                                ) : (
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                                        🔒 Contact details are shared once you're hired
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>

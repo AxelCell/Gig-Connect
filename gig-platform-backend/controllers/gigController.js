@@ -154,9 +154,10 @@ export const getGigs = async (req, res) => {
       ];
     }
 
+    // Public listing: never expose contact details here
     const gigs = await Gig.find(filter)
-      .populate("client", "name email phone")
-      .populate("assignedWorkers", "name email")
+      .populate("client", "name")
+      .populate("assignedWorkers", "name")
       .sort({ createdAt: -1 });
 
     const normalized = gigs.map((gig) => normalizeGigForRead(gig));
@@ -181,7 +182,25 @@ export const getGigById = async (req, res) => {
       return res.status(404).json({ message: "Gig not found" });
     }
 
-    res.json(normalizeGigForRead(gig));
+    const viewerId = req.user?._id?.toString();
+    const canSeeContacts = Boolean(viewerId) && (
+      req.user.role === "admin" ||
+      gig.client?._id?.toString() === viewerId ||
+      gig.assignedWorkers.some((worker) => worker._id.toString() === viewerId)
+    );
+
+    const result = normalizeGigForRead(gig.toObject());
+    if (!canSeeContacts) {
+      // Only the client, the hired worker and admins may see emails and phone numbers
+      [result.client, result.worker, ...(result.assignedWorkers || [])]
+        .filter((person) => person && typeof person === "object")
+        .forEach((person) => {
+          delete person.email;
+          delete person.phone;
+        });
+    }
+
+    res.json(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -13,7 +13,7 @@ import {
   startGigWork,
   stopGigWork,
 } from "../controllers/gigController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, optionalAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -29,7 +29,7 @@ router.put("/:id/stop", protect, stopGigWork);
 router.get("/:id/invoice", protect, generateGigInvoice);
 
 // Parameterized routes
-router.get("/:id", getGigById);
+router.get("/:id", optionalAuth, getGigById);
 
 // Mutation routes
 router.post("/", protect, createGig);
