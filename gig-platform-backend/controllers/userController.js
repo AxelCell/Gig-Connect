@@ -9,6 +9,9 @@ import Report from "../models/Report.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+const MIN_PASSWORD_LENGTH = 6;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
@@ -24,15 +27,21 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Name, email, and password are required" });
     }
 
+    if (!EMAIL_REGEX.test(String(email).trim())) {
+      return res.status(400).json({ message: "Please enter a valid email address" });
+    }
+
+    if (String(password).length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
+    }
+
     const userExists = await User.findOne({ email: email.toLowerCase() });
     if (userExists) {
       return res.status(400).json({ message: "User already exists with this email" });
     }
 
-    let safeRole = role || "worker";
-    if (!["worker", "client", "admin"].includes(safeRole)) {
-      safeRole = "worker";
-    }
+    // Admin accounts must never be self-registered; promote them directly in the database.
+    const safeRole = ["worker", "client"].includes(role) ? role : "worker";
 
     const cleanedPhone = String(phone || "").trim();
     if (cleanedPhone && !/^\d{10,15}$/.test(cleanedPhone)) {
@@ -168,6 +177,9 @@ export const updateUserProfile = async (req, res) => {
     if (avatar !== undefined) user.avatar = avatar;
 
     if (password) {
+      if (String(password).length < MIN_PASSWORD_LENGTH) {
+        return res.status(400).json({ message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
+      }
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
     }
